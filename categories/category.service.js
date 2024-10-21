@@ -22,7 +22,7 @@ async function getAll(userId) {
     const categories = await db.Category.findAll(
         {
             where: { accountId: userId, parentId: null },
-            order: [[ 'category_title', 'ASC']] ,
+            order: [[ 'category_title', 'ASC'], ['ChildCategory', 'category_title', 'ASC']] ,
             include: [
                 {
                     model: db.Category, 
@@ -52,7 +52,7 @@ async function getAllWithTotalByDate(startDate, endDate, userId) {
 //"Account" in this context means cash/tracking Categories—not to be confused with the Account model for users
 async function getCashTrackingAccountsWithTotals(userId, date) {
     const categories = await db.sequelize.query(
-        "SELECT categories.id, categories.category_title, categories.category_type, SUM(transactions.credit - transactions.debit) as bankBalance FROM categories INNER JOIN transactions ON categories.id = transactions.categoryId WHERE categories.accountId=? AND categories.category_type='cash' AND transactions.transaction_date <= ? GROUP BY  categories.id, transactions.categoryId ORDER BY categories.category_title;",
+        "SELECT categories.id, categories.category_title, categories.category_type, categories.hidden, SUM(transactions.credit - transactions.debit) as bankBalance FROM categories INNER JOIN transactions ON categories.id = transactions.categoryId WHERE categories.accountId=? AND categories.category_type='cash' AND transactions.transaction_date <= ? GROUP BY  categories.id, transactions.categoryId ORDER BY categories.category_title;",
          
          { 
             replacements: [userId, date],
@@ -126,6 +126,6 @@ async function getOpeningBalanceCategory(id) {
 
 
 function basicDetails(category) {
-    const { id, account_id, category_title, category_type, parentId, totalReportAmountCredit, totalReportAmountDebit, bankBalance, CategoryTransactions, ChildCategory, CategoryPlan  } = category;
-    return { id, account_id, category_title, category_type, parentId, totalReportAmountCredit, totalReportAmountDebit, bankBalance, CategoryTransactions, ChildCategory, CategoryPlan  };
+    const { id, account_id, category_title, hidden, category_type, parentId, totalReportAmountCredit, totalReportAmountDebit, bankBalance, CategoryTransactions, ChildCategory, CategoryPlan  } = category;
+    return { id, account_id, category_title, hidden, category_type, parentId, totalReportAmountCredit, totalReportAmountDebit, bankBalance, CategoryTransactions, ChildCategory, CategoryPlan  };
 }
